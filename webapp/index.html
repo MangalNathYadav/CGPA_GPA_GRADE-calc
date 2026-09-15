@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="A premium Grade, GPA, and CGPA calculator with support for absolute and relative grading methods, including standard deviation and class averages." />
+  <title>Grade & GPA Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <div class="app-wrapper">
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="app-header">
+      <div class="app-header__icon">🎯</div>
+      <h1>Grade & GPA Calculator</h1>
+      <p>Calculate your GPA and CGPA with absolute or relative grading</p>
+    </header>
+    <!-- ═══ TABS ═══ -->
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="gpaPanel" role="tab">📊 GPA Calculator</button>
+      <button class="tab-btn" data-tab="cgpaPanel" role="tab">🎓 CGPA Calculator</button>
+      <button class="tab-btn" data-tab="scalePanel" role="tab">📋 Grading Scale</button>
+    </nav>
+
+    <!-- ═══════════════════════════════════ -->
+    <!-- GPA PANEL                          -->
+    <!-- ═══════════════════════════════════ -->
+    <section id="gpaPanel" class="tab-panel active">
+
+      <!-- Results -->
+      <div class="card" style="animation: fadeSlideIn 0.5s 0.15s both;">
+        <div class="results-grid">
+          <div class="result-card">
+            <div class="result-card__label">Semester GPA</div>
+            <div class="result-card__value" id="resGPA">0.00</div>
+            <div class="result-card__sub">out of 10.00</div>
+          </div>
+          <div class="result-card">
+            <div class="result-card__label">Total Credits</div>
+            <div class="result-card__value success-gradient" id="resTotalCredits">0</div>
+            <div class="result-card__sub">credits attempted</div>
+          </div>
+          <div class="result-card">
+            <div class="result-card__label">Courses</div>
+            <div class="result-card__value warm-gradient" id="resTotalCourses">0</div>
+            <div class="result-card__sub">added</div>
+          </div>
+          <div class="result-card">
+            <div class="result-card__label">% Equivalent</div>
+            <div class="result-card__value" id="resPctEquiv">—</div>
+            <div class="result-card__sub">approximate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course Form -->
+      <div class="card" style="animation: fadeSlideIn 0.5s 0.25s both;">
+        <div class="card__title">
+          ➕ Add Course
+        </div>
+        <form id="courseForm" onsubmit="return false;">
+
+          <!-- Grading Method -->
+          <div class="form-grid" style="margin-bottom: 1rem;">
+            <div class="form-group full-width">
+              <label>
+                Grading Method
+                <span class="info-tip"
+                  data-tip="Absolute: uses fixed percentage ranges. Relative: uses class statistics (mean, std dev) to assign grades.">?</span>
+              </label>
+              <select id="gradingMethod">
+                <option value="absolute">Absolute Grading (Fixed %)</option>
+                <option value="relative">Relative Grading (Curve-based)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Core Inputs -->
+          <div class="form-grid" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label>Course Name <span class="req">*</span></label>
+              <input type="text" id="courseName" placeholder="e.g. Data Structures" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label>Credits <span class="req">*</span></label>
+              <input type="number" id="courseCredits" placeholder="e.g. 4" min="0.5" step="0.5" />
+            </div>
+          </div>
+
+          <!-- ─── Absolute Inputs ─── -->
+          <div id="absoluteInputs">
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>
+                  Marks / Percentage <span class="req">*</span>
+                  <span class="info-tip"
+                    data-tip="Enter your percentage score (0–100). The grade will be assigned using the fixed grading scale.">?</span>
+                </label>
+                <input type="number" id="courseMarks" placeholder="e.g. 85" min="0" max="100" step="0.1" />
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── Relative Inputs ─── -->
+          <div id="relativeInputs" style="display:none;">
+            <div class="card__title" style="font-size:0.9rem; margin-top:0.5rem;">
+              📈 Your Score & Class Statistics
+            </div>
+
+            <div class="form-grid" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label>Your Marks <span class="req">*</span></label>
+                <input type="number" id="relMarks" placeholder="e.g. 72" min="0" max="100" step="0.1" />
+              </div>
+              <div class="form-group">
+                <label>
+                  Class Average (Mean) <span class="req">*</span>
+                  <span class="info-tip"
+                    data-tip="The average marks of the entire class. This is the most critical value for relative grading.">?</span>
+                </label>
+                <input type="number" id="classMean" placeholder="e.g. 60" min="0" max="100" step="0.1" />
+              </div>
+            </div>
+
+            <div class="form-grid three-col">
+              <div class="form-group">
+                <label>
+                  Highest Mark <span class="opt">(optional)</span>
+                  <span class="info-tip"
+                    data-tip="Used to estimate standard deviation if not provided directly. Enter the highest mark scored in the class.">?</span>
+                </label>
+                <input type="number" id="classHighest" placeholder="e.g. 95" min="0" max="100" step="0.1" />
+              </div>
+              <div class="form-group">
+                <label>
+                  Lowest Mark <span class="opt">(optional)</span>
+                  <span class="info-tip"
+                    data-tip="Used with highest mark to estimate std dev: σ ≈ (highest − lowest) / 4">?</span>
+                </label>
+                <input type="number" id="classLowest" placeholder="e.g. 25" min="0" max="100" step="0.1" />
+              </div>
+              <div class="form-group">
+                <label>
+                  Std Deviation (σ) <span class="opt">(optional)</span>
+                  <span class="info-tip"
+                    data-tip="Standard deviation of the class marks. If you don't have this, provide highest and lowest marks — we'll estimate it for you.">?</span>
+                </label>
+                <input type="number" id="classStdDev" placeholder="e.g. 12" min="0" step="0.1" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="btn-row">
+            <button type="button" class="btn btn--primary" id="addCourseBtn">➕ Add Course</button>
+            <button type="button" class="btn btn--danger-ghost btn--sm" id="clearAllBtn">🗑️ Clear All</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Course List -->
+      <div class="card" style="animation: fadeSlideIn 0.5s 0.35s both;">
+        <div class="card__title">📚 Added Courses</div>
+        <div class="course-list" id="courseList"></div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <!-- CGPA PANEL                         -->
+    <!-- ═══════════════════════════════════ -->
+    <section id="cgpaPanel" class="tab-panel">
+
+      <!-- CGPA Results -->
+      <div class="card">
+        <div class="results-grid">
+          <div class="result-card">
+            <div class="result-card__label">Cumulative GPA</div>
+            <div class="result-card__value" id="resCGPA">0.00</div>
+            <div class="result-card__sub">out of 10.00</div>
+          </div>
+          <div class="result-card">
+            <div class="result-card__label">Total Credits</div>
+            <div class="result-card__value success-gradient" id="resCgpaTotalCredits">0</div>
+            <div class="result-card__sub">all semesters</div>
+          </div>
+          <div class="result-card">
+            <div class="result-card__label">Semesters</div>
+            <div class="result-card__value warm-gradient" id="resCgpaSemesters">0</div>
+            <div class="result-card__sub">recorded</div>
+          </div>
+          <div class="result-card">
+            <div class="result-card__label">% Equivalent</div>
+            <div class="result-card__value" id="resCgpaPctEquiv">—</div>
+            <div class="result-card__sub">approximate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Semester Form -->
+      <div class="card">
+        <div class="card__title">➕ Add Semester</div>
+        <form id="cgpaForm" onsubmit="return false;">
+          <div class="form-grid three-col">
+            <div class="form-group">
+              <label>Semester Name <span class="opt">(optional)</span></label>
+              <input type="text" id="semesterName" placeholder="e.g. Fall 2025" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label>Credits Earned <span class="req">*</span></label>
+              <input type="number" id="semesterCredits" placeholder="e.g. 22" min="0.5" step="0.5" />
+            </div>
+            <div class="form-group">
+              <label>
+                Semester GPA <span class="req">*</span>
+                <span class="info-tip" data-tip="Enter the GPA for this semester on a 10-point scale.">?</span>
+              </label>
+              <input type="number" id="semesterGPA" placeholder="e.g. 8.54" min="0" max="10" step="0.01" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn btn--success" id="addSemesterBtn">➕ Add Semester</button>
+            <button type="button" class="btn btn--danger-ghost btn--sm" id="clearSemestersBtn">🗑️ Clear All</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Semester List -->
+      <div class="card">
+        <div class="card__title">🎓 Semester Records</div>
+        <div class="course-list" id="semesterList"></div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <!-- GRADING SCALE PANEL                -->
+    <!-- ═══════════════════════════════════ -->
+    <section id="scalePanel" class="tab-panel">
+      <div class="card">
+        <div class="card__title">📋 10-Point Grading Scale</div>
+        <table class="scale-table">
+          <thead>
+            <tr>
+              <th>Grade</th>
+              <th>Grade Points</th>
+              <th>Percentage Range</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="scaleTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card__title">📈 How Relative Grading Works</div>
+        <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.7; margin-bottom: 1rem;">
+          In relative grading, your grade depends on how you perform <strong>relative to your classmates</strong>,
+          rather than against fixed percentage cutoffs. The system uses the <strong>class mean (average)</strong> and
+          <strong>standard deviation (σ)</strong> to set dynamic grade boundaries.
+        </p>
+        <table class="scale-table">
+          <thead>
+            <tr>
+              <th>Grade</th>
+              <th>Boundary</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="course-item__grade grade-s" style="font-size:0.8rem;padding:0.2rem 0.5rem;">S</span></td>
+              <td>≥ Mean + 1.5σ</td>
+              <td>Top performers, well above average</td>
+            </tr>
+            <tr>
+              <td><span class="course-item__grade grade-a" style="font-size:0.8rem;padding:0.2rem 0.5rem;">A</span></td>
+              <td>≥ Mean + 1.0σ</td>
+              <td>Significantly above average</td>
+            </tr>
+            <tr>
+              <td><span class="course-item__grade grade-b" style="font-size:0.8rem;padding:0.2rem 0.5rem;">B+</span>
+              </td>
+              <td>≥ Mean + 0.5σ</td>
+              <td>Above average</td>
+            </tr>
+            <tr>
+              <td><span class="course-item__grade grade-b" style="font-size:0.8rem;padding:0.2rem 0.5rem;">B</span></td>
+              <td>≥ Mean</td>
+              <td>At the class average</td>
+            </tr>
+            <tr>
+              <td><span class="course-item__grade grade-c" style="font-size:0.8rem;padding:0.2rem 0.5rem;">C+</span>
+              </td>
+              <td>≥ Mean − 0.5σ</td>
+              <td>Slightly below average</td>
+            </tr>
+            <tr>
+              <td><span class="course-item__grade grade-c" style="font-size:0.8rem;padding:0.2rem 0.5rem;">C</span></td>
+              <td>≥ Mean − 1.0σ</td>
+              <td>Below average</td>
+            </tr>
+            <tr>
+              <td><span class="course-item__grade grade-d" style="font-size:0.8rem;padding:0.2rem 0.5rem;">D</span></td>
+              <td>≥ Mean − 1.5σ</td>
+              <td>Significantly below average</td>
+            </tr>
+            <tr>
+              <td><span class="course-item__grade grade-e" style="font-size:0.8rem;padding:0.2rem 0.5rem;">E</span></td>
+              <td>≥ Mean − 2.0σ</td>
+              <td>Far below average</td>
+            </tr>
+            <tr>
+              <td><span class="course-item__grade grade-f" style="font-size:0.8rem;padding:0.2rem 0.5rem;">F</span></td>
+              <td>Below</td>
+              <td>Fail</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="color: var(--text-tertiary); font-size: 0.78rem; margin-top: 1rem;">
+          💡 <strong>Tip:</strong> If you don't have the standard deviation, provide the highest and lowest marks in the
+          class.
+          We'll estimate σ ≈ (highest − lowest) / 4 for you.
+        </p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-row">
+        <span class="footer-label">Developed using</span>
+        <span class="footer-badge badge--purple">Gemini 3.1 Pro</span>
+        <span class="footer-badge badge--blue">Claude Opus 4.6 Thinking</span>
+        <span class="footer-sep">·</span>
+        <span class="footer-label">Code Editor</span>
+        <span class="footer-badge badge--dark">Antigravity</span>
+        <span class="footer-sep">·</span>
+        <span class="footer-label">by</span>
+        <span class="footer-badge badge--dark">Mangal Nath Yadav / shadowXg</span>
+      </div>
+      <div class="footer-copy">© 2026 Grade & GPA Calculator. All rights reserved.</div>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
